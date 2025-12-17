@@ -5,6 +5,7 @@ import re
 from typing import Dict, List, Optional, Union
 
 import anthropic
+import httpx
 from anthropic import AsyncStream
 from anthropic.types.beta import BetaMessage as AnthropicMessage, BetaRawMessageStreamEvent
 from anthropic.types.beta.message_create_params import MessageCreateParamsNonStreaming
@@ -233,17 +234,20 @@ class AnthropicClient(LLMClientBase):
         self, llm_config: LLMConfig, async_client: bool = False
     ) -> Union[anthropic.AsyncAnthropic, anthropic.Anthropic]:
         api_key, _, _ = self.get_byok_overrides(llm_config)
+        # Disable timeout to allow long-running requests (>10 minutes)
+        # See: https://github.com/anthropics/anthropic-sdk-python#long-requests
+        timeout = httpx.Timeout(None)
 
         if async_client:
             return (
-                anthropic.AsyncAnthropic(api_key=api_key, max_retries=model_settings.anthropic_max_retries)
+                anthropic.AsyncAnthropic(api_key=api_key, max_retries=model_settings.anthropic_max_retries, timeout=timeout)
                 if api_key
-                else anthropic.AsyncAnthropic(max_retries=model_settings.anthropic_max_retries)
+                else anthropic.AsyncAnthropic(max_retries=model_settings.anthropic_max_retries, timeout=timeout)
             )
         return (
-            anthropic.Anthropic(api_key=api_key, max_retries=model_settings.anthropic_max_retries)
+            anthropic.Anthropic(api_key=api_key, max_retries=model_settings.anthropic_max_retries, timeout=timeout)
             if api_key
-            else anthropic.Anthropic(max_retries=model_settings.anthropic_max_retries)
+            else anthropic.Anthropic(max_retries=model_settings.anthropic_max_retries, timeout=timeout)
         )
 
     @trace_method
@@ -251,17 +255,20 @@ class AnthropicClient(LLMClientBase):
         self, llm_config: LLMConfig, async_client: bool = False
     ) -> Union[anthropic.AsyncAnthropic, anthropic.Anthropic]:
         api_key, _, _ = await self.get_byok_overrides_async(llm_config)
+        # Disable timeout to allow long-running requests (>10 minutes)
+        # See: https://github.com/anthropics/anthropic-sdk-python#long-requests
+        timeout = httpx.Timeout(None)
 
         if async_client:
             return (
-                anthropic.AsyncAnthropic(api_key=api_key, max_retries=model_settings.anthropic_max_retries)
+                anthropic.AsyncAnthropic(api_key=api_key, max_retries=model_settings.anthropic_max_retries, timeout=timeout)
                 if api_key
-                else anthropic.AsyncAnthropic(max_retries=model_settings.anthropic_max_retries)
+                else anthropic.AsyncAnthropic(max_retries=model_settings.anthropic_max_retries, timeout=timeout)
             )
         return (
-            anthropic.Anthropic(api_key=api_key, max_retries=model_settings.anthropic_max_retries)
+            anthropic.Anthropic(api_key=api_key, max_retries=model_settings.anthropic_max_retries, timeout=timeout)
             if api_key
-            else anthropic.Anthropic(max_retries=model_settings.anthropic_max_retries)
+            else anthropic.Anthropic(max_retries=model_settings.anthropic_max_retries, timeout=timeout)
         )
 
     @trace_method
